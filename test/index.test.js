@@ -13,6 +13,7 @@ test.beforeEach(async (t) => {
   const metalsmith = Metalsmith(FIXTURES_DIR)
     .source('./input')
     .destination('./results')
+    .clean(true)
 
   t.context = {
     metalsmith
@@ -285,6 +286,39 @@ test.cb('test catch of invalid image data error', (t) => {
         return t.end()
       }
       t.fail('no error was thrown')
+      t.end()
+    })
+})
+
+test.cb('test ignoring existing destination file', (t) => {
+  const { metalsmith } = t.context
+
+  metalsmith
+    .use(sharp({
+      namingPattern: '{dir}example{ext}'
+    }))
+    .build((err, files) => {
+      if (err) {
+        t.fail()
+        t.end()
+        throw err
+      }
+    })
+
+  metalsmith
+    .use(sharp({
+      namingPattern: '{dir}example{ext}'
+    }))
+    .build((err, files) => {
+      if (err) {
+        t.fail()
+        t.end()
+        throw err
+      }
+      const fileList = Object.keys(files)
+      const fileIndex = fileList.indexOf('example.jpg')
+      t.true(fileIndex === -1)
+      t.pass()
       t.end()
     })
 })

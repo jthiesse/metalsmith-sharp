@@ -1,8 +1,10 @@
-import { parse } from 'path'
+import { existsSync } from 'fs'
+import { join, parse } from 'path'
 import { cloneDeep } from 'lodash'
 import minimatch from 'minimatch'
 import Debug from 'debug'
 import Sharp from 'sharp'
+import absolute from 'absolute'
 
 const debug = Debug('metalsmith-sharp')
 
@@ -59,6 +61,18 @@ export default function (userOptions) {
             ...options
           }
 
+          // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+          const destinationFile = replacePlaceholders(stepOptions.namingPattern, replacements)
+
+          const destinationFileWithPath = absolute(destinationFile) ? destinationFile : join(`${metalsmith.destination()}/`, destinationFile)
+
+          if (existsSync(destinationFileWithPath)) {
+            console.log('Destination File Exists', filename, destinationFileWithPath)
+            delete files[filename]
+            return stepSequence
+          }
+          // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
           if (!minimatch(filename, stepOptions.src)) {
             return stepSequence
           }
@@ -75,11 +89,11 @@ export default function (userOptions) {
             return Promise.reject(err)
           })
           .then((buffer, info) => {
-            const dist = replacePlaceholders(stepOptions.namingPattern, replacements)
+            // const dist = replacePlaceholders(stepOptions.namingPattern, replacements)
             image.contents = buffer
-            files[dist] = image
+            files[destinationFile] = image
 
-            if (filename !== dist && stepOptions.moveFile) {
+            if (filename !== destinationFile && stepOptions.moveFile) {
               delete files[filename]
             }
           })

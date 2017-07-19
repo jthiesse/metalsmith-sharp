@@ -42,7 +42,8 @@ export default function (userOptions) {
     src: '**/*.jpg',
     namingPattern: '{dir}{base}',
     methods: [],
-    moveFile: false
+    moveFile: false,
+    ignoreExisting: false
   }
 
   const optionsList = [].concat(userOptions)
@@ -61,17 +62,17 @@ export default function (userOptions) {
             ...options
           }
 
-          // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
           const destinationFile = replacePlaceholders(stepOptions.namingPattern, replacements)
 
-          const destinationFileWithPath = absolute(destinationFile) ? destinationFile : join(`${metalsmith.destination()}/`, destinationFile)
+          if (stepOptions.ignoreExisting) {
+            const destinationFileWithPath = absolute(destinationFile) ? destinationFile : join(`${metalsmith.destination()}/`, destinationFile)
 
-          if (existsSync(destinationFileWithPath)) {
-            console.log('Destination File Exists', filename, destinationFileWithPath)
-            delete files[filename]
-            return stepSequence
+            if (existsSync(destinationFileWithPath)) {
+              console.log('Destination File Exists', filename, destinationFileWithPath)
+              delete files[filename]
+              return stepSequence
+            }
           }
-          // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
           if (!minimatch(filename, stepOptions.src)) {
             return stepSequence

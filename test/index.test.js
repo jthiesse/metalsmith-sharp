@@ -307,7 +307,8 @@ test.cb('test ignoring existing destination file', (t) => {
 
   metalsmith
     .use(sharp({
-      namingPattern: '{dir}example{ext}'
+      namingPattern: '{dir}example{ext}',
+      ignoreExisting: true
     }))
     .build((err, files) => {
       if (err) {

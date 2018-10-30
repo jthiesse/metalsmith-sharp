@@ -68,7 +68,7 @@ export default function (userOptions) {
             const destinationFileWithPath = absolute(destinationFile) ? destinationFile : join(`${metalsmith.destination()}/`, destinationFile)
 
             if (existsSync(destinationFileWithPath)) {
-              console.log('Destination File Exists', filename, destinationFileWithPath)
+              // console.log('Destination File Exists', filename, destinationFileWithPath)
               delete files[filename]
               return stepSequence
             }

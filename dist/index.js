@@ -1,44 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import { existsSync } from 'fs';
-import { join, parse } from 'path';
-import { cloneDeep } from 'lodash';
-import minimatch from 'minimatch';
-import Debug from 'debug';
-import Sharp from 'sharp';
-import absolute from 'absolute';
-
-const debug = Debug('metalsmith-sharp');
-
-function replacePlaceholders(text, placeholders) {
-  return text.replace(/\{([^}]+)\}/g, (match, pattern) => {
-    if (placeholders.hasOwnProperty(pattern)) {
-      return placeholders[pattern];
-    }
-    return match;
-  });
-}
-
-function getReplacements(path) {
-  const parsedPath = parse(path);
-  if (parsedPath.dir.length) {
-    parsedPath.dir = `${parsedPath.dir}/`;
-  }
-  return parsedPath;
-}
-
-function runSharp(image, options) {
-  const sharp = Sharp(image.contents);
-
-  options.methods.forEach(method => {
-    const args = [].concat(method.args);
-    sharp[method.name](...args);
-  });
-
-  return sharp.toBuffer();
-}
-
-export default function (userOptions) {
+exports.default = function (userOptions) {
   const defaultOptions = {
     src: '**/*.jpg',
     namingPattern: '{dir}{base}',
@@ -63,22 +31,22 @@ export default function (userOptions) {
           const destinationFile = replacePlaceholders(stepOptions.namingPattern, replacements);
 
           if (stepOptions.ignoreExisting) {
-            const destinationFileWithPath = absolute(destinationFile) ? destinationFile : join(`${metalsmith.destination()}/`, destinationFile);
+            const destinationFileWithPath = (0, _absolute2.default)(destinationFile) ? destinationFile : (0, _path.join)(`${metalsmith.destination()}/`, destinationFile);
 
-            if (existsSync(destinationFileWithPath)) {
+            if ((0, _fs.existsSync)(destinationFileWithPath)) {
               // console.log('Destination File Exists', filename, destinationFileWithPath)
               delete files[filename];
               return stepSequence;
             }
           }
 
-          if (!minimatch(filename, stepOptions.src)) {
+          if (!(0, _minimatch2.default)(filename, stepOptions.src)) {
             return stepSequence;
           }
 
           debug(`processing ${filename}`);
 
-          const image = cloneDeep(file);
+          const image = (0, _lodash.cloneDeep)(file);
 
           // Run sharp and save new file.
           return stepSequence.then(() => runSharp(image, stepOptions)).catch(err => {
@@ -101,5 +69,62 @@ export default function (userOptions) {
       done(err);
     });
   };
+};
+
+var _fs = require('fs');
+
+var _path = require('path');
+
+var _lodash = require('lodash');
+
+var _minimatch = require('minimatch');
+
+var _minimatch2 = _interopRequireDefault(_minimatch);
+
+var _debug = require('debug');
+
+var _debug2 = _interopRequireDefault(_debug);
+
+var _sharp = require('sharp');
+
+var _sharp2 = _interopRequireDefault(_sharp);
+
+var _absolute = require('absolute');
+
+var _absolute2 = _interopRequireDefault(_absolute);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+const debug = (0, _debug2.default)('metalsmith-sharp');
+
+function replacePlaceholders(text, placeholders) {
+  return text.replace(/\{([^}]+)\}/g, (match, pattern) => {
+    if (placeholders.hasOwnProperty(pattern)) {
+      return placeholders[pattern];
+    }
+    return match;
+  });
 }
+
+function getReplacements(path) {
+  const parsedPath = (0, _path.parse)(path);
+  if (parsedPath.dir.length) {
+    parsedPath.dir = `${parsedPath.dir}/`;
+  }
+  return parsedPath;
+}
+
+function runSharp(image, options) {
+  const sharp = (0, _sharp2.default)(image.contents);
+
+  options.methods.forEach(method => {
+    const args = [].concat(method.args);
+    sharp[method.name].apply(sharp, _toConsumableArray(args));
+  });
+
+  return sharp.toBuffer();
+}
+
 module.exports = exports['default'];
